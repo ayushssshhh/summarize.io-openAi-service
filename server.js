@@ -7,7 +7,21 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ✅ Allow requests from any origin
-app.use(cors({ origin: "*", methods: "GET, POST, OPTIONS", allowedHeaders: "Content-Type, Authorization" }));
+app.use(
+  cors({
+    origin: "*",
+    methods: "GET, POST, OPTIONS",
+    allowedHeaders: "Content-Type, Authorization",
+  })
+);
+
+// ✅ Handle preflight OPTIONS requests globally
+app.options("*", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.sendStatus(204);
+});
 
 // ✅ Middleware to parse JSON requests
 app.use(express.json());
@@ -43,6 +57,8 @@ app.post("/summarize", async (req, res) => {
       }
     );
 
+    // ✅ Explicitly set CORS headers in response
+    res.header("Access-Control-Allow-Origin", "*");
     res.json(response.data);
   } catch (error) {
     console.error("Error fetching data from OpenAI:", error);
