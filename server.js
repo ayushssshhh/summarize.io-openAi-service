@@ -13,6 +13,8 @@ app.use(express.json()); // Parse JSON requests
 app.post("/summarize", async (req, res) => {
   try {
     const { content } = req.body; // Get content from frontend
+    
+    console.log("Request hit on : ", new Date());
 
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
