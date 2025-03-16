@@ -4,17 +4,32 @@ const cors = require("cors");
 const axios = require("axios");
 
 const app = express();
-const PORT = 5000; // Change if needed
+const PORT = process.env.PORT || 5000;
 
-app.use(cors({ origin: "*", methods: "GET, POST, OPTIONS", allowedHeaders: "Content-Type, Authorization" }));
-app.use(express.json()); // Parse JSON requests
+// ✅ Allow requests from Chrome extension & API domain
+const corsOptions = {
+  origin: [
+    "chrome-extension://fphbpnfphccddahlahcjlibenoijgdmh", // Your Chrome Extension ID
+    "https://summarize-io-open-ai-service-1mznfeyow-ayushssshhhs-projects.vercel.app", // Your API URL
+  ],
+  methods: "GET, POST, OPTIONS",
+  allowedHeaders: "Content-Type, Authorization",
+  credentials: true,
+};
 
-// Route to fetch OpenAI response
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // Handle preflight OPTIONS request
+
+// ✅ Middleware to parse JSON requests
+app.use(express.json());
+
+// ✅ Route to fetch OpenAI response
 app.post("/summarize", async (req, res) => {
   try {
-    const { content } = req.body; // Get content from frontend
-    
-    console.log("Request hit on : ", new Date());
+    const { content } = req.body;
+    if (!content) {
+      return res.status(400).json({ error: "Content is required" });
+    }
 
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
@@ -23,7 +38,11 @@ app.post("/summarize", async (req, res) => {
         messages: [
           {
             role: "user",
-            content: `Create a detailed bullet points summary for the mentioned content. Make sure while creating bullet points, don't create nested bullet points, and each bullet point should start with a hyphen and end with a full stop. \nContent: ${content}`,
+            content: `Create a detailed bullet points summary for the mentioned content. 
+            - Each bullet point should start with a hyphen and end with a full stop.
+            - No nested bullet points.
+            
+            Content: ${content}`,
           },
         ],
       },
@@ -35,13 +54,14 @@ app.post("/summarize", async (req, res) => {
       }
     );
 
-    res.json(response.data); // Send OpenAI response to frontend
+    res.json(response.data);
   } catch (error) {
     console.error("Error fetching data from OpenAI:", error);
     res.status(500).json({ error: "Failed to fetch summary" });
   }
 });
 
-// Start Server
-app.listen(process.env.PORT || PORT, () => {
+// ✅ Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT} and accepting Chrome extension requests.`);
 });
