@@ -6,19 +6,8 @@ const axios = require("axios");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ Allow requests from Chrome extension & API domain
-const corsOptions = {
-  origin: [
-    "chrome-extension://fphbpnfphccddahlahcjlibenoijgdmh", // Your Chrome Extension ID
-    "https://summarize-io-open-ai-service-1mznfeyow-ayushssshhhs-projects.vercel.app", // Your API URL
-  ],
-  methods: "GET, POST, OPTIONS",
-  allowedHeaders: "Content-Type, Authorization",
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // Handle preflight OPTIONS request
+// ✅ Allow requests from any origin
+app.use(cors({ origin: "*", methods: "GET, POST, OPTIONS", allowedHeaders: "Content-Type, Authorization" }));
 
 // ✅ Middleware to parse JSON requests
 app.use(express.json());
@@ -63,5 +52,5 @@ app.post("/summarize", async (req, res) => {
 
 // ✅ Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT} and accepting Chrome extension requests.`);
+  console.log(`🚀 Server running on port ${PORT} and accepting requests from any client.`);
 });
