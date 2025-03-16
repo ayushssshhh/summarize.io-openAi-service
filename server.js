@@ -6,13 +6,15 @@ const axios = require("axios");
 const app = express();
 const PORT = 5000; // Change if needed
 
-app.use(cors()); // Enable CORS for frontend requests
+app.use(cors({ origin: "*", methods: "GET, POST, OPTIONS", allowedHeaders: "Content-Type, Authorization" }));
 app.use(express.json()); // Parse JSON requests
 
 // Route to fetch OpenAI response
 app.post("/summarize", async (req, res) => {
   try {
     const { content } = req.body; // Get content from frontend
+    
+    console.log("Request hit on : ", new Date());
 
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
